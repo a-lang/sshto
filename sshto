@@ -5,6 +5,7 @@ LOCAL=18080  # Local  port for tunneling.
 GUEST=$USER  # Alternative username to login with.
 DEST='~'     # Destination folder on target server to download\upload files.
 TIME=60      # Timer for tunneling command. Tunnel will be closed after 60 seconds, but it will stay open if used.
+EDITOR="vi"  # Editor to edit the config file
 
 #Add your commands to this list
 cmdlist_renew () { cmdlist=(
@@ -238,13 +239,18 @@ new_list () {
     echo "filter='$filter'" > $tmpfile
 }
 
-contents_menu () {
-	filter=$(dialog --output-fd 1 --ok-label "SELECT" --cancel-label "BACK" \
-                    --no-items --menu "Select list of hosts:" 0 0 0 "All" "${content[@]}")
-	case $filter:$? in
-             All:0) list=( "${fullist[@]}" );;
-               *:0) new_list;;
-	esac;           first_dialog
+contents_edit() {
+	cfg_list=($(find ~/.ssh -name "config*" -type f))
+	filter=$(dialog --output-fd 1 \
+			--ok-label "SELECT" \
+			--cancel-label "BACK" \
+			--no-items \
+			--menu "Select list of configs to edit using $EDITOR :" \
+		0 0 0 "${cfg_list[@]}")
+        case $filter:$? in
+		*:0) 	$EDITOR $filter;;
+	esac
+	first_dialog
 }
 
 #------------------------{ First dialog - Select host }--------------------------------------------
@@ -256,7 +262,7 @@ first_dialog () {
 	case $target:$? in
        -*\ *\ *-:*) first_dialog ;;
                *:0) go_to_target  ; first_dialog;;
-               *:2) contents_menu;;
+               *:2) contents_edit;;
       	       *:3) second_dialog;;
       	       *:*) bye;;
   	esac
