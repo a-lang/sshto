@@ -307,6 +307,13 @@ second_dialog () {
 	esac;            second_dialog
 }
 
+# Check if the ~/.ssh/config exist and there is a host defined.
+seek_hosts=$(grep -ch "Host " ~/.ssh/config 2>/dev/null)
+if [ -z $seek_hosts ];then
+    echo "The file ~/.ssh/config doesn't exist or no hosts defined!"
+    exit 1
+fi
+
 #-------------{ Create hosts list. Get hosts and descriptions from ~/.ssh/config. }----------------
 IFSOLD=$IFS; IFS=$'\n'; for host in $(grep -h "Host " ~/.ssh/config* | sed '/\*/d; s/Host //g;'); {
 
